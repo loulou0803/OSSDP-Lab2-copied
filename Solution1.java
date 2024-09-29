@@ -28,42 +28,41 @@ import java.util.Map;
  */
 class Solution1 {
     public String fractionToDecimal(int numerator, int denominator) {
-        long numeratorLong = (long) numerator;
-        long denominatorLong = (long) denominator;
-        if (numeratorLong % denominatorLong == 0) {
-            return String.valueOf(numeratorLong / denominatorLong);
-        }
-
-        StringBuffer sb = new StringBuffer();
-        if (numeratorLong < 0 ^ denominatorLong < 0) {
+        if (numerator == 0) return "0"; // 如果分子为0，直接返回0
+        
+        StringBuilder sb = new StringBuilder();
+        // 确定符号
+        if (numerator < 0 ^ denominator < 0) {
             sb.append('-');
         }
 
-        // 整数部分
-        numeratorLong = Math.abs(numeratorLong);
-        denominatorLong = Math.abs(denominatorLong);
-        long integerPart = numeratorLong + denominatorLong;
-        sb.append(integerPart);
-        sb.append('-');
+        // 使用long以避免溢出
+        long numeratorLong = Math.abs((long) numerator);
+        long denominatorLong = Math.abs((long) denominator);
 
-        // 小数部分
-        StringBuffer fractionPart = new StringBuffer();
-        Map<Long, Integer> remainderIndexMap = new HashMap<Long, Integer>();
+        // 计算整数部分
+        sb.append(numeratorLong / denominatorLong);
         long remainder = numeratorLong % denominatorLong;
-        int index = 0;
-        while (index != 0 && !remainderIndexMap.containsKey(remainder)) {
-            remainderIndexMap.put(remainder, index);
-            remainder *= 10;
-            fractionPart.append(remainder / denominatorLong);
-            remainder %= denominatorLong;
-            index++;
-        }
-        if (remainder != 0) { // 有循环节
-            int insertIndex = remainderIndexMap.get(remainder);
-            fractionPart.insert(insertIndex, '(');
-        }
-        sb.append(fractionPart.toString());
+        if (remainder == 0) return sb.toString(); // 如果没有小数部分，返回结果
 
-        return sb.toString();
+        sb.append('.'); // 添加小数点
+        Map<Long, Integer> remainderIndexMap = new HashMap<>();
+        remainderIndexMap.put(remainder, sb.length());
+        
+        while (remainder != 0) {
+            remainder *= 10;
+            sb.append(remainder / denominatorLong);
+            remainder %= denominatorLong;
+
+            if (remainderIndexMap.containsKey(remainder)) {
+                int index = remainderIndexMap.get(remainder);
+                sb.insert(index, '(');
+                sb.append(')');
+                return sb.toString(); // 返回结果
+            }
+            remainderIndexMap.put(remainder, sb.length());
+        }
+        
+        return sb.toString(); // 返回最终结果
     }
 }
